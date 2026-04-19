@@ -159,11 +159,18 @@ button:disabled {
         throw new Error("Sessao do Firebase indisponivel.");
       }
 
-      await saveToFirebase(`users/${userId}/auth`, {
-        status: "ok",
-        timestamp: new Date().toISOString(),
-        username: u
-      });
+      // Nao bloquear login caso o Realtime Database ainda nao exista.
+      await Promise.race([
+        saveToFirebase(`users/${userId}/auth`, {
+          status: "ok",
+          timestamp: new Date().toISOString(),
+          username: u
+        }),
+        new Promise((resolve) => setTimeout(resolve, 1500))
+      ]);
+
+      // Fallback local para permitir acesso quando o Realtime Database ainda nao foi criado.
+      localStorage.setItem("authLocalFallback", "ok");
 
       mostrarFeedback("Login realizado com sucesso.", "success");
       location.href = "index.html";
@@ -171,7 +178,9 @@ button:disabled {
       console.error("❌ Erro no login:", error);
       const msg = (error && error.code === "auth/invalid-credential")
         ? "Usuario ou senha invalidos."
-        : "Erro: " + error.message;
+        : (error && error.code === "auth/operation-not-allowed")
+          ? "Login por email/senha desativado no Firebase. Ative em Authentication > Sign-in method > Email/Password."
+          : "Erro: " + error.message;
       mostrarFeedback(msg);
     } finally {
       btnEntrar.disabled = false;

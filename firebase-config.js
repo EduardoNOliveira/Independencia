@@ -12,13 +12,13 @@ import { getDatabase, ref, set, get, child, onValue, off } from "https://www.gst
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyB-Yd7vqqVw7s5W21clNG3DdopcySFXJxQ",
-  authDomain: "lotofacil2026-63cec.firebaseapp.com",
-  projectId: "lotofacil2026-63cec",
-  storageBucket: "lotofacil2026-63cec.firebasestorage.app",
-  messagingSenderId: "67841661053",
-  appId: "1:67841661053:web:f848eec4e264a4d9d7f914",
-  databaseURL: "https://lotofacil2026-63cec-default-rtdb.firebaseio.com/"
+  apiKey: "AIzaSyBoPniuFXbxD8OAwN9XkeRhBwnvdYAuESE",
+  authDomain: "independencia-2026-edu.firebaseapp.com",
+  projectId: "independencia-2026-edu",
+  storageBucket: "independencia-2026-edu.firebasestorage.app",
+  messagingSenderId: "1031081224325",
+  appId: "1:1031081224325:web:69f2226e3ff92ce054a1ec",
+  databaseURL: "https://independencia-2026-edu-default-rtdb.firebaseio.com/"
 };
 
 // Initialize Firebase
@@ -31,7 +31,7 @@ export const db = getDatabase(app);
 // Mapeamento simples de usuario para email de login no Firebase Auth.
 // Ajuste conforme os usuarios cadastrados no Console do Firebase.
 const USERNAME_TO_EMAIL = {
-  Eduardo: "eduardo.noliveira.login@gmail.com"
+  Eduardo: "edunoliveira1@gmail.com"
 };
 
 // Inicializacao de estado de autenticacao
@@ -140,7 +140,7 @@ export async function removeFromFirebase(path) {
 export function setupRealtimeSync(onDataChange) {
   // Remover listener anterior se existir
   if (realtimeListener) {
-    off(realtimeListener);
+    realtimeListener();
   }
   
   const dbRef = ref(db, "dados/lotofacil2026");
@@ -189,7 +189,7 @@ export function setupRealtimeSync(onDataChange) {
 // Função para limpar listener
 export function cleanupRealtimeSync() {
   if (realtimeListener) {
-    off(realtimeListener);
+    realtimeListener();
     realtimeListener = null;
   }
 }

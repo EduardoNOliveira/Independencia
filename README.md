@@ -65,3 +65,48 @@ Exemplo base (ajuste conforme necessidade):
 Projeto estatico: abra login.html via servidor local (Live Server, Vercel, Netlify ou similar).
 
 Importante: evite abrir direto como file:// para nao ter problemas com imports ES modules.
+
+## Migrar para outro projeto Firebase (com dados preenchidos)
+
+Sim, e possivel migrar para um novo Firebase sem perder os dados.
+
+### 1) Exportar backup da base atual
+
+Na tela principal (index.html), use o botao:
+
+- 💾 Exportar backup
+
+Isso baixa um JSON com os registros atuais.
+
+### 2) Criar novo projeto no Firebase
+
+No Firebase Console:
+
+1. Crie um novo projeto.
+2. Crie um app Web.
+3. Copie as credenciais para firebase-config.js:
+	- apiKey
+	- authDomain
+	- projectId
+	- storageBucket
+	- messagingSenderId
+	- appId
+	- databaseURL
+4. Em Authentication > Sign-in method, ative Email/Password.
+5. Crie o usuario de login.
+6. Ajuste USERNAME_TO_EMAIL em firebase-config.js.
+
+### 3) Importar os dados no novo projeto
+
+Com o app apontando para o novo Firebase e logado:
+
+1. Abra index.html.
+2. Clique em 📥 Importar backup.
+3. Selecione o JSON exportado.
+4. O app carrega os dados localmente e sincroniza automaticamente para o novo Firebase.
+
+### 4) Validacao rapida
+
+1. Abra a mesma conta em outro dispositivo.
+2. Confirme se a tabela e totais aparecem iguais.
+3. Marque/desmarque um mes e confirme se sincroniza em tempo real.

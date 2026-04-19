@@ -33,12 +33,19 @@ export async function checkAuth() {
     
     // Verificar se o usuario fez login (tem dados de auth no Firebase)
     const authStatus = await getFromFirebase(`users/${userId}/auth`);
-    
+
     if (!authStatus || authStatus.status !== "ok") {
-      console.log("❌ Usuário não autenticado - redirecionando para login");
-      console.log("AuthStatus:", authStatus);
-      window.location.href = "login.html";
-      return false;
+      const fallbackLocal = localStorage.getItem("authLocalFallback") === "ok";
+
+      if (!fallbackLocal) {
+        console.log("❌ Usuário não autenticado - redirecionando para login");
+        console.log("AuthStatus:", authStatus);
+        window.location.href = "login.html";
+        return false;
+      }
+
+      console.warn("⚠️ Usando fallback local de autenticacao (Realtime Database indisponivel)");
+      return true;
     }
     
     console.log("✅ Usuário autenticado:", authStatus.username);
@@ -61,6 +68,8 @@ async function logout() {
       await removeFromFirebase(`users/${userId}/auth`);
       console.log("✅ Dados removidos do Firebase");
     }
+
+    localStorage.removeItem("authLocalFallback");
     
     // Fazer logout do Firebase Auth
     const { logoutFirebaseAuth } = await import("./firebase-config.js");
@@ -71,6 +80,7 @@ async function logout() {
     location.href = "login.html";
   } catch (error) {
     console.error("❌ Erro ao fazer logout:", error);
+    localStorage.removeItem("authLocalFallback");
     // Mesmo com erro, redirecionar para login
     location.href = "login.html";
   }
