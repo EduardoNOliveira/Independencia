@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de Hash SHA-256</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      --bg-1: #eef5ff;
+      --bg-2: #dbeafe;
+      --card: #ffffff;
+      --line: #cdd9ec;
+      --text: #172033;
+      --primary: #0b6bcb;
+      --primary-2: #084f96;
+      --success: #00b050;
+      --danger: #dc2626;
+      font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(11, 107, 203, 0.14), transparent 35%),
+        radial-gradient(circle at 90% 5%, rgba(0, 176, 80, 0.12), transparent 40%),
+        linear-gradient(145deg, var(--bg-1), var(--bg-2));
+    }
+    .box {
+      width: 100%;
+      max-width: 640px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 16px;
+      box-shadow: 0 14px 36px rgba(3, 24, 56, 0.18);
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background: linear-gradient(180deg, var(--primary), var(--primary-2));
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .resultado {
+      background: #f8fbff;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-family: monospace;
+      word-break: break-all;
+    }
+    .feedback {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    .feedback.ok {
+      display: block;
+      background: var(--success);
+      color: #fff;
+    }
+    .feedback.err {
+      display: block;
+      background: var(--danger);
+      color: #fff;
+    }
+    .acoes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    @media (max-width: 640px) {
+      .acoes {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<main class="box">
+
+<h1>🔐 Gerador de Hash SHA-256</h1>
+
+<input id="senha" type="password" placeholder="Digite sua senha">
+<div class="acoes">
+  <button id="btnGerar">Gerar Hash</button>
+  <button id="btnCopiar" type="button">Copiar Hash</button>
+</div>
+
+<h3>Resultado:</h3>
+<div class="resultado" id="resultado">Nenhum hash gerado ainda</div>
+<div class="feedback" id="feedback"></div>
+
+</main>
+
+<script>
+let ultimoHash = "";
+
+function mostrarFeedback(msg, ok = false) {
+  const feedback = document.getElementById("feedback");
+  feedback.textContent = msg;
+  feedback.className = `feedback ${ok ? "ok" : "err"}`;
+}
+
+async function gerar() {
+  const senha = document.getElementById("senha").value;
+  
+  if (!senha) {
+    mostrarFeedback("Digite uma senha antes de gerar.");
+    return;
+  }
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(senha);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hash));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  ultimoHash = hashHex;
+
+  document.getElementById("resultado").innerHTML = `
+    <strong>Hash SHA-256:</strong><br>
+    <code>${hashHex}</code>
+  `;
+
+  mostrarFeedback("Hash gerado com sucesso.", true);
+}
+
+async function copiarHash() {
+  if (!ultimoHash) {
+    mostrarFeedback("Gere um hash antes de copiar.");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(ultimoHash);
+    mostrarFeedback("Hash copiado para a area de transferencia.", true);
+  } catch {
+    mostrarFeedback("Nao foi possivel copiar automaticamente. Copie manualmente.");
+  }
+}
+
+document.getElementById("btnGerar").addEventListener("click", gerar);
+document.getElementById("btnCopiar").addEventListener("click", copiarHash);
+
+document.getElementById("senha").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") gerar();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>LOTOFÁCIL DA INDEPENDÊNCIA 2026</title>
+
+<style>
+body {
+  --bg-1: #f4f7fb;
+  --bg-2: #eaf2ff;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --line: #d7deea;
+  --primary: #0b6bcb;
+  --primary-2: #084f96;
+  --success: #00b050;
+  --danger: #dc2626;
+  font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+  padding: 20px;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 10% 20%, rgba(11, 107, 203, 0.12), transparent 35%),
+    radial-gradient(circle at 90% 10%, rgba(0, 176, 80, 0.1), transparent 40%),
+    linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  min-height: 100vh;
+}
+
+h2 {
+  text-align: center;
+  margin: 8px 0 14px;
+  letter-spacing: 0.3px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--card);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(2, 22, 56, 0.08);
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 8px 6px;
+  text-align: center;
+}
+
+th {
+  background: #f3f7fd;
+  color: #334155;
+}
+
+tr.quitado { background: #00B050; font-weight: bold; }
+tr.pg { color: #0070C0; font-weight: bold; }
+tr.atrasado { color: #FF0000; font-weight: bold; }
+tr.nao-pagou { color: #000; }
+
+input[type="text"] {
+  padding: 10px 12px;
+  width: 220px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  outline: none;
+}
+
+input[type="text"]:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+button {
+  padding: 10px 12px;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  font-weight: 600;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+button:hover {
+  filter: brightness(1.06);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* TOPO */
+.barra-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.total-box {
+  margin-left: auto;
+  font-weight: bold;
+  color: var(--success);
+  font-size: 22px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 176, 80, 0.09);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.btn-sair {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+}
+
+.btn-excluir {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+}
+
+.btn-imagem {
+  background: linear-gradient(180deg, #14b8a6, #0f766e);
+}
+
+/* ================== */
+/* MODO IMAGEM        */
+/* ================== */
+.modo-print .btn-add,
+.modo-print .btn-excluir,
+.modo-print .btn-imagem,
+.modo-print .btn-sair,
+.modo-print input {
+  display: none !important;
+}
+
+/* 🔒 Trava quebra de linha na imagem */
+.modo-print td,
+.modo-print th {
+  white-space: nowrap !important;
+}
+
+/* Nome sempre em uma linha */
+.modo-print td:nth-child(3) {
+  white-space: nowrap !important;
+}
+
+/* Valor total sempre em uma linha */
+.modo-print td:last-child {
+  white-space: nowrap !important;
+  text-align: center;
+}
+	
+.modo-print table,
+.modo-print th,
+.modo-print td {
+  border: none !important;
+}
+
+.modo-print th:first-child,
+.modo-print td:first-child {
+  display: none !important;
+}
+
+.whatsapp-box {
+  margin: 15px 0;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f9f9f9;
+  font-size: 16px;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.whatsapp-box {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+}
+
+.whatsapp-box {
+  display: none;
+}
+
+.modo-print .whatsapp-box {
+  display: block;
+}
+.pg-text {
+  display: none;
+  font-weight: bold;
+  color: #0070C0;
+}
+
+.modo-print input[type="checkbox"]:checked + .pg-text {
+  display: inline;
+}
+
+/* 🎯 Ajuste fino: imagem WhatsApp */
+.modo-print .btn-desfazer {
+  display: none !important;
+}
+
+.celula-quitado {
+  text-align: center;
+  font-weight: bold;
+}
+
+.modo-print .total-box::before {
+  content: "💵 ";
+}
+
+/* 🧠 Corrige título no iPhone (html2canvas + Safari) */
+.modo-print h2 {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+/* Indicador de sincronização */
+.sync-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sync-indicator.syncing {
+  background: rgba(255, 193, 7, 0.9);
+}
+
+.sync-indicator.synced {
+  background: rgba(0, 176, 80, 0.9);
+}
+
+.sync-indicator.error {
+  background: rgba(255, 0, 0, 0.9);
+}
+
+.sync-indicator .spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.offline-indicator {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  z-index: 1000;
+  display: none;
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  min-width: 240px;
+  max-width: 320px;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+  animation: toastIn 0.2s ease;
+  font-size: 14px;
+}
+
+.toast.success { background: rgba(0, 176, 80, 0.95); }
+.toast.error { background: rgba(220, 38, 38, 0.95); }
+.toast.info { background: rgba(11, 107, 203, 0.95); }
+
+@keyframes toastIn {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  body {
+    padding: 12px;
+  }
+
+  .barra-topo {
+    gap: 8px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+  }
+
+  .total-box {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+	
+/* 💵 Total arrecadado como linha mesclada */
+.modo-print .total-box {
+  width: 100% !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.modo-print .total-box span {
+  white-space: nowrap !important;
+}
+
+/* 🔥 FIX DEFINITIVO iPhone – TOTAL ARRECADADO */
+.modo-print .total-box {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  margin: 10px 0 !important;
+}
+
+.modo-print .total-box span {
+  display: inline !important;
+  white-space: nowrap !important;
+}
+
+/* ===============================
+   FIX DEFINITIVO iOS - CENTRALIZAR TOTAL
+   =============================== */
+
+.modo-print .barra-topo {
+  display: block !important;
+  text-align: center !important;
+}
+
+.modo-print .total-box {
+  display: inline-block !important;
+  margin: 12px auto !important;
+  font-size: 22px;
+  font-weight: bold;
+  white-space: nowrap !important;
+}
+
+.modo-print .total-box span {
+  display: inline !important;
+  white-space: nowrap !important;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sync-indicator" id="syncIndicator" style="display: none;">
+  <div class="spinner"></div>
+  <span>Sincronizando...</span>
+</div>
+
+<div class="offline-indicator" id="offlineIndicator">
+  ⚠️ Offline
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<h2>🎯 COTA MENSAL – LOTOFÁCIL DA INDEPENDÊNCIA 2026</h2>
+<button class="btn-sair" id="btnSair">Sair</button>
+
+<div class="barra-topo">
+  <input type="text" id="novoNome" placeholder="Novo nome">
+  <button class="btn-add" onclick="adicionarNome()">➕ Adicionar</button>
+  <button class="btn-excluir" onclick="excluirSelecionados()">🗑 Excluir</button>
+  <button class="btn-imagem" onclick="gerarImagem()">📸 Gerar imagem</button>
+
+  	<div class="total-box">
+	  TOTAL ARRECADADO <span id="totalValor">R$ 0,00</span>
+	</div>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>DEL</th>
+  <th>Nº</th>
+  <th>Nome</th>
+  <th>JAN</th><th>FEV</th><th>MAR</th><th>ABR</th>
+  <th>MAI</th><th>JUN</th><th>JUL</th><th>AGO</th><th>SET</th>
+  <th>Total</th>
+</tr>
+</thead>
+<tbody id="tabela"></tbody>
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+const MESES = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET"];
+const VALOR_MES = 35;
+
+const nomesIniciais = [
+"Aline Goes","Angelo Miranda","Carmem","Celina Rosa","Cilene Queiroz",
+"Daisy","Diego Barbosa","Eduardo Oliveira","Emilson Barbosa","Fátima Barretto",
+"Flávia Reis","Gabi Silva","Gabriel Reale","Gal/Roberta","Gerson","Graça Teixeira",
+"Izabela Sofia","Leopoldina","Luciana Veiga","Maria Espinheira",
+"Marina Argolo","Mônica Pereira","Patricia R.","Regi 01","Regi 02","Regi 03",
+"Regi 04","Reijane Silva","Rosa","Sandro Teles","Sueli","Tatiana Nascimento",
+"Vicente Matheus","Conceição","Fabiano Souza","Helena Argolo","Jane Márcia",
+"José Jaime","Luis Alberto Júnior","Manoel Messias","Sueli Ramos","Vanda"
+];
+
+let dados = null;
+let isSyncing = false;
+let syncTimeout = null;
+
+function mostrarToast(mensagem, tipo = "info") {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${tipo}`;
+  toast.textContent = mensagem;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2800);
+}
+
+function escapeJsString(texto = "") {
+  return texto
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\"/g, '\\"');
+}
+
+// Função para inicializar dados padrão
+function inicializarDadosPadrao() {
+  return nomesIniciais.map(n => ({
+    nome: n,
+    meses: Array(9).fill(false),
+    quitado: false,
+    selecionado: false
+  }));
+}
+
+// Função para atualizar indicador de sincronização
+function atualizarIndicadorSync(status, texto) {
+  const indicator = document.getElementById("syncIndicator");
+  if (!indicator) return;
+  
+  indicator.className = `sync-indicator ${status}`;
+  const span = indicator.querySelector("span");
+  if (span) span.textContent = texto;
+  
+  if (status === "synced") {
+    setTimeout(() => {
+      if (indicator.className.includes("synced")) {
+        indicator.style.display = "none";
+      }
+    }, 2000);
+  } else {
+    indicator.style.display = "flex";
+  }
+}
+
+async function salvar(silent = false) {
+  if (!dados) return;
+  
+  // Salvar no localStorage primeiro (cache local)
+  localStorage.setItem("lotofacil2026", JSON.stringify(dados));
+  
+  // Sincronizar com Firebase (debounce para evitar muitas chamadas)
+  if (syncTimeout) {
+    clearTimeout(syncTimeout);
+  }
+  
+  syncTimeout = setTimeout(async () => {
+    if (isSyncing) return; // Evitar múltiplas sincronizações simultâneas
+    
+    isSyncing = true;
+    if (!silent) atualizarIndicadorSync("syncing", "Sincronizando...");
+    
+    try {
+      const { salvarDadosFirebase } = await import("./auth.js");
+      await salvarDadosFirebase(dados);
+      if (!silent) atualizarIndicadorSync("synced", "✓ Sincronizado");
+    } catch (error) {
+      console.warn("Erro ao sincronizar com Firebase:", error);
+      if (!silent) atualizarIndicadorSync("error", "✗ Erro na sincronização");
+    } finally {
+      isSyncing = false;
+    }
+  }, 500); // Debounce de 500ms
+}
+
+function mesesConsecutivos(p) {
+  let c = 0;
+  for (let m of p.meses) {
+    if (m) c++;
+    else break;
+  }
+  return c;
+}
+
+function pesoPessoa(p) {
+  const pagos = p.meses.filter(m => m).length;
+  const cons = mesesConsecutivos(p);
+  if (p.quitado) return 10000;
+  if (pagos > 0 && pagos === cons) return 5000 + cons;
+  if (pagos > 0) return 2000 + pagos;
+  return 0;
+}
+
+function renderTabela(silent = false) {
+  if (!dados || !Array.isArray(dados)) return;
+  
+  const tbody = document.getElementById("tabela");
+  if (!tbody) return;
+  
+  tbody.innerHTML = "";
+  let totalGeral = 0;
+
+  dados.sort((a,b) => pesoPessoa(b) - pesoPessoa(a) || a.nome.localeCompare(b.nome));
+
+  dados.forEach((pessoa, i) => {
+    const pagos = pessoa.meses.filter(m => m).length;
+    const cons = mesesConsecutivos(pessoa);
+    const atrasado = pagos > cons;
+    const totalPessoa = pagos * VALOR_MES;
+    totalGeral += totalPessoa;
+
+    const nomeSeguro = escapeJsString(pessoa.nome);
+
+    const tr = document.createElement("tr");
+
+    if (pessoa.quitado) tr.className = "quitado";
+    else if (pagos === 0) tr.className = "nao-pagou";
+    else if (!atrasado) tr.className = "pg";
+    else tr.className = "atrasado";
+
+    tr.innerHTML = `
+      <td><input type="checkbox" ${pessoa.selecionado ? "checked" : ""}
+        onchange="toggleSelecionado('${nomeSeguro}')"></td>
+      <td>${String(i+1).padStart(2,"0")}</td>
+      <td>${pessoa.quitado ? pessoa.nome.toUpperCase() : pessoa.nome}</td>
+    `;
+
+    if (pessoa.quitado) {
+		tr.innerHTML += `
+			<td colspan="9" style="text-align:center;font-weight:bold;">
+				QUITADO
+				<button class="btn-desfazer"
+          onclick="desfazerQuitado('${nomeSeguro}')"
+					style="margin-left:10px;padding:4px 8px;cursor:pointer;">
+					↩ Desfazer
+				</button>
+			</td>
+		`;
+	} else {
+		pessoa.meses.forEach((m, idx) => {
+			tr.innerHTML += `
+				<td>
+					<input type="checkbox" ${m ? "checked" : ""}
+          onchange="toggleMes('${nomeSeguro}',${idx})">
+					<span class="pg-text">PG</span>
+				</td>
+			`;
+		});
+	}
+
+
+    tr.innerHTML += `<td>R$ ${totalPessoa.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const totalElement = document.getElementById("totalValor");
+  if (totalElement) {
+    totalElement.innerText = "R$ " + totalGeral.toFixed(2);
+  }
+
+  salvar(silent);
+}
+
+// Função para carregar dados do Firebase e atualizar interface
+async function carregarDadosFirebase() {
+  try {
+    atualizarIndicadorSync("syncing", "Carregando dados...");
+    
+    const { getFromFirebase } = await import("./firebase-config.js");
+    const firebaseData = await getFromFirebase(`dados/lotofacil2026`);
+    
+    if (firebaseData && Array.isArray(firebaseData)) {
+      dados = firebaseData;
+      localStorage.setItem("lotofacil2026", JSON.stringify(dados));
+      console.log("✅ Dados carregados do Firebase");
+      atualizarIndicadorSync("synced", "✓ Dados atualizados");
+      renderTabela(true); // Renderizar sem salvar novamente
+    } else {
+      // Se não há dados no Firebase, usar localStorage ou inicializar
+      const localData = localStorage.getItem("lotofacil2026");
+      if (localData) {
+        try {
+          dados = JSON.parse(localData);
+          if (!Array.isArray(dados)) {
+            dados = inicializarDadosPadrao();
+          }
+        } catch {
+          dados = inicializarDadosPadrao();
+        }
+      } else {
+        dados = inicializarDadosPadrao();
+      }
+      
+      // Salvar dados iniciais no Firebase
+      if (dados) {
+        const { salvarDadosFirebase } = await import("./auth.js");
+        await salvarDadosFirebase(dados);
+      }
+      
+      atualizarIndicadorSync("synced", "✓ Dados inicializados");
+      renderTabela(true);
+    }
+  } catch (error) {
+    console.error("Erro ao carregar dados do Firebase:", error);
+    
+    // Fallback para localStorage
+    const localData = localStorage.getItem("lotofacil2026");
+    if (localData) {
+      try {
+        dados = JSON.parse(localData);
+        if (!Array.isArray(dados)) {
+          dados = inicializarDadosPadrao();
+        }
+      } catch {
+        dados = inicializarDadosPadrao();
+      }
+    } else {
+      dados = inicializarDadosPadrao();
+    }
+    
+    atualizarIndicadorSync("error", "✗ Usando dados locais");
+    renderTabela(true);
+  }
+}
+
+function desfazerQuitado(nome) {
+  const p = dados.find(p => p.nome === nome);
+  if (!p) return;
+  p.quitado = false;
+  renderTabela();
+}
+
+function toggleMes(nome, idx) {
+  const p = dados.find(p => p.nome === nome);
+  if (!p) return;
+  p.meses[idx] = !p.meses[idx];
+  p.quitado = p.meses.every(m => m);
+  renderTabela();
+}
+
+function toggleSelecionado(nome) {
+  const p = dados.find(p => p.nome === nome);
+  if (!p) return;
+  p.selecionado = !p.selecionado;
+  salvar();
+}
+
+function adicionarNome() {
+  const nome = document.getElementById("novoNome").value.trim();
+  if (!nome) {
+    mostrarToast("Digite um nome para adicionar.", "error");
+    return;
+  }
+  if (dados.some(p => p.nome.toLowerCase() === nome.toLowerCase()))
+    return mostrarToast("Esse nome já existe na lista.", "error");
+
+  dados.push({
+    nome,
+    meses: Array(9).fill(false),
+    quitado: false,
+    selecionado: false
+  });
+
+  document.getElementById("novoNome").value = "";
+  mostrarToast("Nome adicionado com sucesso.", "success");
+  renderTabela();
+}
+
+function excluirSelecionados() {
+  const totalSelecionados = dados.filter(p => p.selecionado).length;
+  if (totalSelecionados === 0) {
+    mostrarToast("Selecione ao menos um nome para excluir.", "info");
+    return;
+  }
+
+  dados = dados.filter(p => !p.selecionado);
+  mostrarToast(`${totalSelecionados} nome(s) excluído(s).`, "success");
+  renderTabela();
+}
+
+function gerarImagem() {
+  document.body.classList.add("modo-print");
+
+  html2canvas(document.body, {
+    scale: 2,
+    backgroundColor: "#fff"
+  }).then(canvas => {
+
+    canvas.toBlob(blob => {
+      const file = new File(
+        [blob],
+        "lotofacil_2026.png",
+        { type: "image/png" }
+      );
+
+      // 🔥 iPhone / iOS / WhatsApp
+      if (navigator.share) {
+        navigator.share({
+          files: [file],
+          title: "Lotofácil Independência 2026"
+        });
+        mostrarToast("Imagem pronta para compartilhamento.", "success");
+      } else {
+        // fallback (PC / Android antigo)
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "lotofacil_2026.png";
+        link.click();
+        mostrarToast("Imagem gerada com sucesso.", "success");
+      }
+
+      document.body.classList.remove("modo-print");
+    });
+
+  });
+}
+
+// Não renderizar ainda - esperar carregar do Firebase
+</script>
+
+<script type="module">
+  import { initializeAuth, setupRealtimeSync, cleanupRealtimeSync } from "./firebase-config.js";
+  import { checkAuth, logout } from "./auth.js";
+  
+  console.log("📱 Inicializando index.html...");
+  
+  // Initialize Firebase e carregar dados
+  (async () => {
+    try {
+      console.log("1️⃣ Inicializando Firebase...");
+      await initializeAuth();
+      console.log("✅ Firebase inicializado");
+      
+      console.log("2️⃣ Verificando autenticação...");
+      await checkAuth();
+      // Se checkAuth redirecionou, não continuar
+      if (window.location.pathname.includes("login.html")) {
+        return;
+      }
+      console.log("✅ Autenticação verificada");
+      
+      console.log("3️⃣ Carregando dados do Firebase...");
+      await carregarDadosFirebase();
+      console.log("✅ Dados carregados");
+      
+      console.log("4️⃣ Ativando listener em tempo real...");
+      setupRealtimeSync((newData) => {
+        console.log("🔄 Dados alterados em outro dispositivo!");
+        
+        // Atualizar dados sem recarregar a página
+        if (newData && Array.isArray(newData)) {
+          dados = newData;
+          localStorage.setItem("lotofacil2026", JSON.stringify(dados));
+          atualizarIndicadorSync("synced", "✓ Atualizado de outro dispositivo");
+          renderTabela(true); // Renderizar sem salvar (já está salvo)
+        }
+      });
+      console.log("✅ Listener ativado - sincronização em tempo real ativa");
+      
+      // Detecção de conexão
+      window.addEventListener("online", () => {
+        console.log("✅ Conexão restaurada");
+        const indicator = document.getElementById("offlineIndicator");
+        if (indicator) indicator.style.display = "none";
+        // Tentar sincronizar novamente
+        carregarDadosFirebase();
+      });
+
+      window.addEventListener("offline", () => {
+        console.log("⚠️ Conexão perdida");
+        const indicator = document.getElementById("offlineIndicator");
+        if (indicator) indicator.style.display = "block";
+      });
+      
+    } catch (error) {
+      console.error("❌ Erro na inicialização:", error);
+      // Mesmo com erro, tentar carregar dados locais
+      if (!dados) {
+        await carregarDadosFirebase();
+      }
+    }
+  })();
+
+  // Cleanup ao sair da página
+  window.addEventListener("beforeunload", () => {
+    cleanupRealtimeSync();
+  });
+
+  // Setup logout button - esperar o DOM estar pronto
+  function setupLogoutButton() {
+    const btnSair = document.getElementById("btnSair");
+    if (btnSair) {
+      // Remover listeners anteriores se houver
+      const newBtn = btnSair.cloneNode(true);
+      btnSair.parentNode.replaceChild(newBtn, btnSair);
+      
+      console.log("✅ Botão sair encontrado, adicionando listener");
+      newBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("🔓 Clicando em sair...");
+        try {
+          cleanupRealtimeSync();
+          await logout();
+          // O logout já redireciona, mas garantimos aqui também
+          console.log("✅ Logout executado");
+        } catch (error) {
+          console.error("❌ Erro no logout:", error);
+          // Mesmo com erro, redirecionar
+          window.location.href = "login.html";
+        }
+      });
+    } else {
+      console.error("❌ Botão sair não encontrado!");
+    }
+  }
+  
+  // Tentar configurar imediatamente se DOM já estiver pronto
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupLogoutButton);
+  } else {
+    setupLogoutButton();
+  }
+  
+  // Backup com timeout
+  setTimeout(setupLogoutButton, 500);
+  
+  // Listener para eventos de atualização (sem recarregar página)
+  window.addEventListener("dataUpdated", (event) => {
+    console.log("📱 Evento dataUpdated disparado");
+    if (event.detail && Array.isArray(event.detail)) {
+      dados = event.detail;
+      localStorage.setItem("lotofacil2026", JSON.stringify(dados));
+      atualizarIndicadorSync("synced", "✓ Atualizado");
+      renderTabela(true);
+    }
+  });
+  
+  // Detectar quando a página está visível novamente e sincronizar
+  document.addEventListener("visibilitychange", async () => {
+    if (!document.hidden) {
+      console.log("📱 Página visível novamente - verificando atualizações...");
+      await carregarDadosFirebase();
+    }
+  });
+  
+  // Sincronizar periodicamente (a cada 30 segundos) como backup
+  setInterval(async () => {
+    if (!document.hidden && !isSyncing) {
+      console.log("🔄 Sincronização periódica...");
+      await carregarDadosFirebase();
+    }
+  }, 30000);
+
+// ===============================
+// ⏱ LOGOUT AUTOMÁTICO POR INATIVIDADE (10 MIN)
+// ===============================
+
+const TEMPO_INATIVIDADE = 10 * 60 * 1000; // 10 minutos
+let timerInatividade = null;
+
+// Reinicia o contador
+function resetarInatividade() {
+  if (timerInatividade) clearTimeout(timerInatividade);
+
+  timerInatividade = setTimeout(async () => {
+    console.log("⏱ Inatividade detectada - fazendo logout...");
+    try {
+      cleanupRealtimeSync();
+      await logout();
+    } catch (e) {
+      console.warn("Erro ao deslogar por inatividade", e);
+    } finally {
+      window.location.href = "login.html";
+    }
+  }, TEMPO_INATIVIDADE);
+}
+
+// Eventos que contam como atividade real
+[
+  "click",
+  "mousemove",
+  "keydown",
+  "scroll",
+  "touchstart",
+  "touchmove"
+].forEach(evento => {
+  document.addEventListener(evento, resetarInatividade, true);
+});
+
+// Iniciar contador assim que a página carrega
+resetarInatividade();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Login - Lotofácil 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  --bg-1: #eef5ff;
+  --bg-2: #dbeafe;
+  --card: #ffffff;
+  --line: #c9d9ef;
+  --text: #172033;
+  --primary: #0b6bcb;
+  --primary-2: #084f96;
+  --danger: #dc2626;
+  --success: #00b050;
+  font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(11, 107, 203, 0.14), transparent 32%),
+    radial-gradient(circle at 90% 5%, rgba(0, 176, 80, 0.12), transparent 40%),
+    linear-gradient(145deg, var(--bg-1), var(--bg-2));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  color: var(--text);
+}
+.box {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  padding: 30px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 360px;
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 14px 36px rgba(3, 24, 56, 0.18);
+}
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  letter-spacing: 0.3px;
+}
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+button {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(180deg, var(--primary), var(--primary-2));
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: filter 0.2s ease, transform 0.12s ease;
+}
+
+button:hover {
+  filter: brightness(1.06);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.feedback {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  display: none;
+}
+
+.feedback.error {
+  display: block;
+  color: #fff;
+  background: var(--danger);
+}
+
+.feedback.success {
+  display: block;
+  color: #fff;
+  background: var(--success);
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>🔐 Acesso</h2>
+  <input id="user" placeholder="Usuário">
+  <input id="pass" type="password" placeholder="Senha">
+  <button id="btnEntrar">Entrar</button>
+  <div id="feedback" class="feedback"></div>
+</div>
+
+<script type="module">
+  import {
+    initializeAuth,
+    saveToFirebase,
+    auth,
+    loginWithUsernameAndPassword
+  } from "./firebase-config.js";
+
+  const btnEntrar = document.getElementById("btnEntrar");
+  const feedback = document.getElementById("feedback");
+
+  function mostrarFeedback(msg, tipo = "error") {
+    feedback.textContent = msg;
+    feedback.className = `feedback ${tipo}`;
+  }
+
+  function limparFeedback() {
+    feedback.textContent = "";
+    feedback.className = "feedback";
+  }
+
+  async function login() {
+    const u = document.getElementById("user").value.trim();
+    const p = document.getElementById("pass").value;
+
+    limparFeedback();
+
+    if (!u || !p) {
+      mostrarFeedback("Digite usuário e senha.");
+      return;
+    }
+
+    try {
+      btnEntrar.disabled = true;
+      btnEntrar.textContent = "Entrando...";
+
+      await initializeAuth();
+      await loginWithUsernameAndPassword(u, p);
+
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        throw new Error("Sessao do Firebase indisponivel.");
+      }
+
+      await saveToFirebase(`users/${userId}/auth`, {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        username: u
+      });
+
+      mostrarFeedback("Login realizado com sucesso.", "success");
+      location.href = "index.html";
+    } catch (error) {
+      console.error("❌ Erro no login:", error);
+      const msg = (error && error.code === "auth/invalid-credential")
+        ? "Usuario ou senha invalidos."
+        : "Erro: " + error.message;
+      mostrarFeedback(msg);
+    } finally {
+      btnEntrar.disabled = false;
+      btnEntrar.textContent = "Entrar";
+    }
+  }
+
+  // Ao clicar no botão
+  btnEntrar.addEventListener("click", login);
+
+  // Enter envia o formulário
+  document.getElementById("user").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") login();
+  });
+
+  document.getElementById("pass").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") login();
+  });
+</script>
+</body>
+</html>
+
+
