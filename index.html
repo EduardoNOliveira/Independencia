@@ -131,14 +131,6 @@ button:active {
   background: linear-gradient(180deg, #14b8a6, #0f766e);
 }
 
-.btn-exportar {
-  background: linear-gradient(180deg, #f59e0b, #b45309);
-}
-
-.btn-importar {
-  background: linear-gradient(180deg, #6366f1, #4338ca);
-}
-
 /* ================== */
 /* MODO IMAGEM        */
 /* ================== */
@@ -414,9 +406,6 @@ button:active {
   <button class="btn-add" onclick="adicionarNome()">➕ Adicionar</button>
   <button class="btn-excluir" onclick="excluirSelecionados()">🗑 Excluir</button>
   <button class="btn-imagem" onclick="gerarImagem()">📸 Gerar imagem</button>
-  <button class="btn-exportar" onclick="exportarBackup()">💾 Exportar backup</button>
-  <button class="btn-importar" onclick="abrirImportacaoBackup()">📥 Importar backup</button>
-  <input id="inputBackup" type="file" accept="application/json" style="display:none;" onchange="importarBackup(event)">
 
   	<div class="total-box">
 	  TOTAL ARRECADADO <span id="totalValor">R$ 0,00</span>
@@ -784,83 +773,6 @@ function gerarImagem() {
         link.download = "lotofacil_2026.png";
         link.click();
         mostrarToast("Imagem gerada com sucesso.", "success");
-      }
-
-
-      function abrirImportacaoBackup() {
-        const input = document.getElementById("inputBackup");
-        if (input) {
-          input.value = "";
-          input.click();
-        }
-      }
-
-      function validarRegistroPessoa(pessoa) {
-        if (!pessoa || typeof pessoa.nome !== "string") return false;
-        if (!Array.isArray(pessoa.meses) || pessoa.meses.length !== 9) return false;
-        if (!pessoa.meses.every(m => typeof m === "boolean")) return false;
-
-        return true;
-      }
-
-      function exportarBackup() {
-        if (!Array.isArray(dados) || dados.length === 0) {
-          mostrarToast("Nao ha dados para exportar.", "info");
-          return;
-        }
-
-        const payload = {
-          versao: 1,
-          exportadoEm: new Date().toISOString(),
-          totalRegistros: dados.length,
-          dados
-        };
-
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `lotofacil_backup_${new Date().toISOString().slice(0, 10)}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-
-        mostrarToast("Backup exportado com sucesso.", "success");
-      }
-
-      async function importarBackup(event) {
-        const file = event?.target?.files?.[0];
-        if (!file) return;
-
-        try {
-          const texto = await file.text();
-          const json = JSON.parse(texto);
-          const lista = Array.isArray(json) ? json : json?.dados;
-
-          if (!Array.isArray(lista) || lista.length === 0) {
-            mostrarToast("Arquivo invalido: lista de dados nao encontrada.", "error");
-            return;
-          }
-
-          const normalizado = lista.map((p) => ({
-            nome: (p.nome || "").toString().trim(),
-            meses: Array.isArray(p.meses) ? p.meses.slice(0, 9).map(Boolean) : Array(9).fill(false),
-            quitado: typeof p.quitado === "boolean" ? p.quitado : false,
-            selecionado: false
-          })).filter(validarRegistroPessoa);
-
-          if (normalizado.length === 0) {
-            mostrarToast("Arquivo invalido: nenhum registro valido.", "error");
-            return;
-          }
-
-          dados = normalizado;
-          localStorage.setItem("lotofacil2026", JSON.stringify(dados));
-          renderTabela();
-          mostrarToast(`Backup importado: ${normalizado.length} registro(s).`, "success");
-        } catch (error) {
-          console.error("Erro ao importar backup:", error);
-          mostrarToast("Falha ao importar backup. Verifique o arquivo JSON.", "error");
-        }
       }
       document.body.classList.remove("modo-print");
     });
