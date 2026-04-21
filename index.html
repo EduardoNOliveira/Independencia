@@ -165,6 +165,14 @@ button:active {
   border: none !important;
 }
 
+/* Evita corte horizontal em mobile durante exportação */
+.modo-print table {
+  display: table !important;
+  overflow: visible !important;
+  width: max-content !important;
+  min-width: 100% !important;
+}
+
 .modo-print th:first-child,
 .modo-print td:first-child {
   display: none !important;
@@ -744,40 +752,104 @@ function excluirSelecionados() {
   renderTabela();
 }
 
-function gerarImagem() {
-  document.body.classList.add("modo-print");
+async function gerarImagem() {
+  const htmlEl = document.documentElement;
+  const bodyEl = document.body;
+  const viewport = window.visualViewport;
+  const zoomScale = viewport && viewport.scale ? viewport.scale : 1;
+  const maxCanvasArea = 26800000;
+  const whatsappMaxBytes = 8 * 1024 * 1024;
 
-  html2canvas(document.body, {
-    scale: 2,
-    backgroundColor: "#fff"
-  }).then(canvas => {
+  const originalHtmlWidth = htmlEl.style.width;
+  const originalBodyWidth = bodyEl.style.width;
+  const originalOverflowX = bodyEl.style.overflowX;
 
-    canvas.toBlob(blob => {
-      const file = new File(
-        [blob],
-        "lotofacil_2026.png",
-        { type: "image/png" }
-      );
+  bodyEl.classList.add("modo-print");
 
-      // 🔥 iPhone / iOS / WhatsApp
-      if (navigator.share) {
-        navigator.share({
-          files: [file],
-          title: "Lotofácil Independência 2026"
-        });
-        mostrarToast("Imagem pronta para compartilhamento.", "success");
-      } else {
-        // fallback (PC / Android antigo)
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "lotofacil_2026.png";
-        link.click();
-        mostrarToast("Imagem gerada com sucesso.", "success");
-      }
-      document.body.classList.remove("modo-print");
+  try {
+    // Forca largura real do conteudo para nao cortar colunas no mobile.
+    const exportWidth = Math.max(
+      bodyEl.scrollWidth,
+      htmlEl.scrollWidth,
+      bodyEl.getBoundingClientRect().width,
+      htmlEl.getBoundingClientRect().width
+    );
+    const exportHeight = Math.max(
+      bodyEl.scrollHeight,
+      htmlEl.scrollHeight,
+      bodyEl.getBoundingClientRect().height,
+      htmlEl.getBoundingClientRect().height
+    );
+
+    const baseScale = Math.max(3, (window.devicePixelRatio || 1) / zoomScale);
+    const maxScaleByArea = Math.sqrt(maxCanvasArea / Math.max(exportWidth * exportHeight, 1));
+    const captureScale = Math.max(1.5, Math.min(baseScale, maxScaleByArea));
+
+    htmlEl.style.width = `${exportWidth}px`;
+    bodyEl.style.width = `${exportWidth}px`;
+    bodyEl.style.overflowX = "visible";
+
+    const canvas = await html2canvas(bodyEl, {
+      scale: captureScale,
+      backgroundColor: "#fff",
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: exportWidth,
+      windowHeight: exportHeight,
+      width: exportWidth,
+      height: exportHeight,
+      removeContainer: true
     });
 
-  });
+    const gerarBlob = (tipo, qualidade) => new Promise(resolve => {
+      canvas.toBlob(resolve, tipo, qualidade);
+    });
+
+    // WhatsApp aceita melhor JPG com tamanho mais leve.
+    let blob = await gerarBlob("image/jpeg", 0.92);
+    if (!blob) {
+      throw new Error("Falha ao gerar imagem");
+    }
+
+    if (blob.size > whatsappMaxBytes) {
+      const qualidades = [0.86, 0.8, 0.74, 0.68, 0.62];
+      for (const q of qualidades) {
+        const comprimido = await gerarBlob("image/jpeg", q);
+        if (!comprimido) continue;
+        blob = comprimido;
+        if (blob.size <= whatsappMaxBytes) break;
+      }
+    }
+
+    const fileName = "lotofacil_2026.jpg";
+    const file = new File([blob], fileName, { type: "image/jpeg" });
+
+    // iOS/WhatsApp: compartilhar quando suportado; se falhar, faz download.
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "Lotofácil Independência 2026"
+      });
+      mostrarToast("Imagem pronta para compartilhamento.", "success");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    mostrarToast("Imagem gerada com sucesso.", "success");
+  } catch (error) {
+    console.error("Erro ao gerar imagem:", error);
+    mostrarToast("Nao foi possivel gerar a imagem.", "error");
+  } finally {
+    htmlEl.style.width = originalHtmlWidth;
+    bodyEl.style.width = originalBodyWidth;
+    bodyEl.style.overflowX = originalOverflowX;
+    bodyEl.classList.remove("modo-print");
+  }
 }
 
 // Não renderizar ainda - esperar carregar do Firebase
