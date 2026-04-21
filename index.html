@@ -763,7 +763,7 @@ async function gerarImagem() {
   const zoomScale = viewport && viewport.scale ? viewport.scale : 1;
   const maxCanvasArea = 26800000;
   const whatsappMaxBytes = 8 * 1024 * 1024;
-  const rightSafetyPx = 40;
+  const rightSafetyPx = 140;
   let exportContainer = null;
 
   try {
@@ -790,15 +790,29 @@ async function gerarImagem() {
     const bodyStyles = window.getComputedStyle(bodyEl);
     exportContainer.style.padding = bodyStyles.padding;
     exportContainer.style.paddingRight = `${(parseFloat(bodyStyles.paddingRight) || 0) + rightSafetyPx}px`;
-    exportContainer.appendChild(titulo.cloneNode(true));
-    exportContainer.appendChild(barraTopo.cloneNode(true));
-    exportContainer.appendChild(tabela.cloneNode(true));
+    const tituloClone = titulo.cloneNode(true);
+    const barraTopoClone = barraTopo.cloneNode(true);
+    const tabelaClone = tabela.cloneNode(true);
+
+    exportContainer.appendChild(tituloClone);
+    exportContainer.appendChild(barraTopoClone);
+    exportContainer.appendChild(tabelaClone);
+
+    // Garante folga visual na ultima coluna ao capturar no iOS/Safari.
+    tabelaClone.style.marginRight = `${rightSafetyPx}px`;
     document.body.appendChild(exportContainer);
 
     // Aguarda layout da copia off-screen estabilizar antes da captura.
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-    const exportWidth = Math.ceil(exportContainer.scrollWidth + rightSafetyPx);
+    const contentWidth = Math.max(
+      exportContainer.scrollWidth,
+      tituloClone.scrollWidth,
+      barraTopoClone.scrollWidth,
+      tabelaClone.scrollWidth,
+      tabela.scrollWidth
+    );
+    const exportWidth = Math.ceil(contentWidth + rightSafetyPx);
     const exportHeight = Math.ceil(exportContainer.scrollHeight);
     exportContainer.style.width = `${exportWidth}px`;
 
