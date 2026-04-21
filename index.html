@@ -753,43 +753,53 @@ function excluirSelecionados() {
 }
 
 async function gerarImagem() {
-  const htmlEl = document.documentElement;
   const bodyEl = document.body;
   const viewport = window.visualViewport;
   const zoomScale = viewport && viewport.scale ? viewport.scale : 1;
   const maxCanvasArea = 26800000;
   const whatsappMaxBytes = 8 * 1024 * 1024;
-
-  const originalHtmlWidth = htmlEl.style.width;
-  const originalBodyWidth = bodyEl.style.width;
-  const originalOverflowX = bodyEl.style.overflowX;
-
-  bodyEl.classList.add("modo-print");
+  let exportContainer = null;
 
   try {
-    // Forca largura real do conteudo para nao cortar colunas no mobile.
-    const exportWidth = Math.max(
-      bodyEl.scrollWidth,
-      htmlEl.scrollWidth,
-      bodyEl.getBoundingClientRect().width,
-      htmlEl.getBoundingClientRect().width
-    );
-    const exportHeight = Math.max(
-      bodyEl.scrollHeight,
-      htmlEl.scrollHeight,
-      bodyEl.getBoundingClientRect().height,
-      htmlEl.getBoundingClientRect().height
-    );
+    const titulo = document.querySelector("h2");
+    const barraTopo = document.querySelector(".barra-topo");
+    const tabela = document.querySelector("table");
+
+    if (!titulo || !barraTopo || !tabela) {
+      throw new Error("Elementos da tela nao encontrados para exportacao");
+    }
+
+    exportContainer = document.createElement("div");
+    exportContainer.className = "modo-print";
+    exportContainer.style.position = "fixed";
+    exportContainer.style.left = "0";
+    exportContainer.style.top = "0";
+    exportContainer.style.zIndex = "-1";
+    exportContainer.style.pointerEvents = "none";
+    exportContainer.style.background = "#fff";
+    exportContainer.style.overflow = "visible";
+    exportContainer.style.maxWidth = "none";
+    exportContainer.style.width = "max-content";
+
+    const bodyStyles = window.getComputedStyle(bodyEl);
+    exportContainer.style.padding = bodyStyles.padding;
+    exportContainer.appendChild(titulo.cloneNode(true));
+    exportContainer.appendChild(barraTopo.cloneNode(true));
+    exportContainer.appendChild(tabela.cloneNode(true));
+    document.body.appendChild(exportContainer);
+
+    // Aguarda layout da copia off-screen estabilizar antes da captura.
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    const exportWidth = Math.ceil(exportContainer.scrollWidth);
+    const exportHeight = Math.ceil(exportContainer.scrollHeight);
+    exportContainer.style.width = `${exportWidth}px`;
 
     const baseScale = Math.max(3, (window.devicePixelRatio || 1) / zoomScale);
     const maxScaleByArea = Math.sqrt(maxCanvasArea / Math.max(exportWidth * exportHeight, 1));
     const captureScale = Math.max(1.5, Math.min(baseScale, maxScaleByArea));
 
-    htmlEl.style.width = `${exportWidth}px`;
-    bodyEl.style.width = `${exportWidth}px`;
-    bodyEl.style.overflowX = "visible";
-
-    const canvas = await html2canvas(bodyEl, {
+    const canvas = await html2canvas(exportContainer, {
       scale: captureScale,
       backgroundColor: "#fff",
       useCORS: true,
@@ -845,10 +855,9 @@ async function gerarImagem() {
     console.error("Erro ao gerar imagem:", error);
     mostrarToast("Nao foi possivel gerar a imagem.", "error");
   } finally {
-    htmlEl.style.width = originalHtmlWidth;
-    bodyEl.style.width = originalBodyWidth;
-    bodyEl.style.overflowX = originalOverflowX;
-    bodyEl.classList.remove("modo-print");
+    if (exportContainer && exportContainer.parentNode) {
+      exportContainer.parentNode.removeChild(exportContainer);
+    }
   }
 }
 
